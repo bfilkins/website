@@ -27,5 +27,5 @@ cloud <-gsd_cloud |>
   hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey, green_state_date_theme$medium_grey)) |>
   hc_add_theme(hc_theme(chart = list(backgroundColor = '#656565')))
 
-saveRDS(cloud, "cloud.RDS")
+saveRDS(cloud, "cloud.rds")
 # Add bounce effect?

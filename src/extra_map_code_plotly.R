@@ -1,4 +1,3 @@
-# Market analysis map 
 
 current_locations <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1uBsuCs_v-VfJ9QVliHs8cV80qyFU4ZmRCuRp6hN_gYo/edit#gid=0")|>
   mutate(location_type = "current_location")
@@ -161,32 +160,3 @@ hcmap(
   ) |>
   hc_mapNavigation(enabled = TRUE) 
 
-
-
-# Start the VT sample one with highcharts (save the image when done)
-
-selected_zips <- zip_code_db |> 
-  filter(state == "VT") |>
-  sample_n(70)
-
-hcmap(
-  "countries/us/us-vt-all",
-  zoomBy = list(howMuch = 3)
-) |>
-  hc_legend (
-    enabled = FALSE
-  ) |>
-  hc_title(text = "Current and Potential Markets") |>
-  hc_add_series(
-    data = selected_zips |>
-      mutate(
-        z = population) |>
-      select(lat,lng, zipcode),
-    type = "mapbubble",
-    name = "zipcode",
-    minSize = "1%",
-    maxSize = "8%",
-    tooltip = list(pointFormat = "zip: {point.zip} <br> population: {point.z}"),
-    color = "grey"
-  ) |>
-  hc_mapNavigation(enabled = TRUE)

@@ -14,7 +14,7 @@ source("src/theme.R")
 
 # make charts (uncomment to refresh)
 # source("src/wordcloud.R")
-# source(")
+# source("src/market_spatial_analysis.R")
 
 # load charts
 source("src/load_charts.R")
@@ -38,7 +38,7 @@ ui = fluidPage(
     width = 12,
     fluidRow(
       column(6, highchartOutput(outputId = "cloud")),
-      column(6, highchartOutput(outputId = "first_plot"))
+      column(6, highchartOutput(outputId = "vt_map"))
       )
     )
   )
@@ -51,6 +51,7 @@ ui = fluidPage(
 server <- function(input, output, session) {
 
   output$cloud <- renderHighchart(cloud)
+  output$vt_map <- renderHighchart(vt_map)
 
 }
 
