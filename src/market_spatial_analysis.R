@@ -6,13 +6,13 @@ selected_zips <- zip_code_db |>
   filter(state == "VT") |>
   mutate(lon = lng) |>
   sample_n(70) |>
-  mutate(home = if_else(zipcode == "05477", green_state_date_theme$dark_grey, green_state_date_theme$`Bright green`))
+  mutate(home = if_else(zipcode == "05477", cool_winter_theme$off_white, green_state_date_theme$`Bright green`))
   
 
 vt_map <-hcmap(
   "countries/us/us-vt-all",
   nullColor = "#656565") |>
-  hc_legend (enabled = FALSE) |>
+  hc_legend (enabled = FALSE)|>
   #hc_title(text = "Current and Potential Markets") |>
   hc_add_series(
     data = selected_zips |>
@@ -27,7 +27,8 @@ vt_map <-hcmap(
   ) |>
   hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) |>
   hc_chart(borderColor = "#656565", borderWidth = 15) |>
-  hc_add_theme(hc_theme(chart = list(plotBackgroundColor = '#656565')))
+  hc_plotOptions(credits = list(enabled = FALSE)) |>
+  hc_add_theme(hc_theme(chart = list(plotBackgroundColor = '#656565')))# |>
   #hc_mapNavigation(enabled = TRUE)
 vt_map
 saveRDS(vt_map, "vt_map.rds")

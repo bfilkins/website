@@ -24,15 +24,6 @@ source("src/load_charts.R")
 ui = fluidPage(
   useShinyjs(),
   theme = my_theme,
-  # tags$style(
-  #   type = "text/css",
-  #   paste0(
-  #     "body{background-image: linear-gradient(to right top,", bg_color, ", ", cool_winter_theme$light_gray, ", ", bg_color,", ", bg_color, ");}
-  #     .transparentBackgroundColorMixin(@alpha,@color) {
-  #       background-color: rgba(red(@color), green(@color), blue(@color), @alpha);
-  #       }" 
-  #   )
-  # ),
   # Main Panel features start 
   mainPanel(
     width = 12,
@@ -59,5 +50,4 @@ server <- function(input, output, session) {
 #options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
 
 shinyApp(ui = ui, server = server)
-
 
