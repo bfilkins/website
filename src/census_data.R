@@ -22,7 +22,7 @@ acs_vars_1 <- acs_vars |>
 # this works for vermont
 acs_demographic_1 <- get_acs(
   variables = acs_vars_1,
-  geography = "county",
+  geography = "county subdivision",
   state = "VT",
   year = 2022,
   output = "tidy",
@@ -80,7 +80,8 @@ acs_age_gender_plot <- acs_demographic_data |>
   arrange(age_factor)
 
 out <- acs_age_gender_plot |>
-  hchart(type = "spline", hcaes(x = age_bracket, y = percent, group = NAME))
+  hchart(type = "spline", hcaes(x = age_bracket, y = percent, group = NAME)) |>
+  hc_legend (enabled = FALSE)
   #hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) 
 out
   #hc_plotOptions(credits = list(enabled = FALSE)) |>

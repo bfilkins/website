@@ -6,12 +6,12 @@ font_selected <- "Quicksand"
 
 #Light Colors
 bg_color <- "#656565"
-fg_color <- "#363636"
+fg_color <- "white"
 detail_color <- "#444444"
 
 green_state_date_theme <- list(
   "Bright green" = "#03C04A",
-  "Deep red" = "#E8E8E8",
+  "off white" = "#E8E8E8",
   "Deep blue" = "#002699",
   "dark_grey" = "#333333",
   "medium_grey" = "#A2A2A2",
@@ -114,7 +114,7 @@ custom_theme <- function(p) {
 my_theme <- bs_theme(
   bg = bg_color,
   fg = fg_color,
-  primary = fg_color,
+  primary = "white",
   secondary = fg_color,
   base_font =  font_selected
 )
@@ -138,4 +138,71 @@ theme_map <- function(...) {
       panel.border = element_blank(),
       ...
     )
+}
+
+hc_theme_gsd <- function (...)
+{
+  cols <- colorRampPalette(c("#FFFFFF", "#8C8984"))(4)
+  theme <-
+    list(
+      colors = cols,
+      chart = list(
+        backgroundColor = "transparent",
+        style = list(fontFamily = "Quicksand",
+                     color = "#FFFFFF")
+      ),
+      plotOptions = list(scatter = list(marker = list(radius = 10))),
+      title = list(style = list(
+        fontSize = "12px", color = "#FFFFFF"
+      )),
+      subtitle = list(style = list(
+        fontSize = "12px", color = "#FFFFFF"
+      )),
+      legend = list(
+        enabled = TRUE,
+        itemStyle = list(fontSize = "12px",
+                         color = "#FFFFFF")
+      ),
+      credits = list(enabled = FALSE),
+      xAxis = list(
+        lineWidth = 1,
+        tickWidth = 1,
+        gridLineColor = "transparent",
+        labels = list(
+          enabled = TRUE,
+          style = list(color = "#FFFFFF",
+                       fontSize = "12px")
+        ),
+        title = list(
+          enabled = TRUE,
+          style = list(color = "#FFFFFF", fontSize = "12px")
+        )
+      ),
+      yAxis = list(
+        lineWidth = 1,
+        tickWidth = 1,
+        gridLineColor = "transparent",
+        labels = list(
+          enabled = TRUE,
+          style = list(color = "#FFFFFF",
+                       fontSize = "12px")
+        ),
+        title = list(
+          enabled = TRUE,
+          style = list(color = "#FFFFFF", fontSize = "12px")
+        )
+      ),
+      tooltip = list(
+        style = list(
+          color = detail_color,
+          fontSize = "12px",
+          padding = "10px"
+        )
+      )
+    )
+  theme <- structure(theme, class = "hc_theme")
+  if (length(list(...)) > 0) {
+    theme <- hc_theme_merge(theme, hc_theme(...))
+  }
+  theme
 }

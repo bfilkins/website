@@ -28,21 +28,87 @@ ui = fluidPage(
   mainPanel(
     width = 12,
     fluidRow(
-      column(6, highchartOutput(outputId = "cloud")),
-      column(6, highchartOutput(outputId = "vt_map"))
+      column(4, highchartOutput(outputId = "cloud")),
+      column(4, highchartOutput(outputId = "vt_map")),
+      column(4, highchartOutput(outputId = "acs_age_plot"))
       )
     )
   )
 
 
-
-
-
 # Define Server ####
 server <- function(input, output, session) {
-
+  
   output$cloud <- renderHighchart(cloud)
-  output$vt_map <- renderHighchart(vt_map)
+  
+  legendMouseOverFunction <- JS("function(event) {Shiny.onInputChange('legendmouseOver', this.name);}")
+  
+  values <- reactiveValues(default = "05477")
+  
+  observeEvent(input$legendmouseOver,{
+    values$default <- input$legendmouseOver
+  })
+  
+  bubble_map <- reactive({
+    hcmap("countries/us/us-vt-all",
+          nullColor = "#656565") |>
+      hc_legend (enabled = FALSE)|>
+      hc_add_series(
+        data = zip_code_base,
+        hcaes(group = zipcode),
+        color = green_state_date_theme$`Bright green`,
+        type = "mapbubble",
+        minSize = "1%",
+        maxSize = "8%",
+        tooltip = list(pointFormat = "{point.major_city} <br> zip: {point.zipcode} <br> population: {point.z}")) |>
+      #hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) |>
+      hc_chart(borderColor = "#656565", borderWidth = 15) |>
+      hc_plotOptions(
+        series = list(events = list(mouseOver = legendMouseOverFunction)),
+        credits = list(enabled = FALSE)
+      ) |>
+      hc_add_theme(hc_theme(chart = list(plotBackgroundColor = '#656565')))
+  })
+  
+  output$vt_map <- renderHighchart({bubble_map()})
+  
+  selected_zip =  eventReactive(input$legendmouseOver, {
+    input$legendmouseOver
+  })
+  
+  selected_zips <- reactive({
+    zip_code_base |>
+      mutate(
+        dynamic_selection = selected_zip(),
+        analysis_selection = if_else(zipcode == dynamic_selection, paste(dynamic_selection,major_city), "remaining aggregate"))
+    })
+  
+  
+  acs_age_plot <- reactive({
+    selected_zips() |>
+      inner_join(
+        acs_demographic_data,
+        by = c("zipcode" = "zip_code")
+        ) |>
+      group_by(age_bracket, age_factor, analysis_selection) |>
+      summarise(value = sum(estimate, na.rm = TRUE)) |>
+      #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
+      ungroup() |>
+      group_by(analysis_selection) |>
+      mutate(
+        total = sum(value),
+        percent = value/total) |>
+      ungroup() |>
+      arrange(age_factor) |>
+      hchart(
+        type = "spline", 
+        hcaes(x = age_bracket, y = percent, group = analysis_selection)) |>
+      hc_legend(enabled = TRUE) |>
+      hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
+      hc_add_theme(hc_theme_gsd())
+    })
+  
+  output$acs_age_plot <- renderHighchart({acs_age_plot()})
 
 }
 

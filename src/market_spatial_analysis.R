@@ -18,7 +18,7 @@ vt_map <-hcmap(
     data = selected_zips |>
       mutate(z = population) |>
       select(lat,lon, zipcode, z, major_city, home),
-    hcaes(color = home),
+    hcaes(group = zipcode, color = home),
     type = "mapbubble",
     name = "zipcode",
     minSize = "1%",
