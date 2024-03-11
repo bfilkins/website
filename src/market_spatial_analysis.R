@@ -7,18 +7,19 @@ selected_zips <- zip_code_db |>
   mutate(lon = lng) |>
   sample_n(70) |>
   mutate(home = if_else(zipcode == "05477", cool_winter_theme$off_white, green_state_date_theme$`Bright green`))
-  
 
-vt_map <-hcmap(
+zip_code_base <- selected_zips |>
+  mutate(z = population) |>
+  select(lat,lon, zipcode, z, major_city, home) 
+
+vt_map_hm <-hcmap(
   "countries/us/us-vt-all",
   nullColor = "#656565") |>
   hc_legend (enabled = FALSE)|>
   #hc_title(text = "Current and Potential Markets") |>
   hc_add_series(
-    data = selected_zips |>
-      mutate(z = population) |>
-      select(lat,lon, zipcode, z, major_city, home),
-    hcaes(group = zipcode, color = home),
+    data = zip_code_base,
+    hcaes(name = zipcode, color = home),
     type = "mapbubble",
     name = "zipcode",
     minSize = "1%",
@@ -30,5 +31,5 @@ vt_map <-hcmap(
   hc_plotOptions(credits = list(enabled = FALSE)) |>
   hc_add_theme(hc_theme(chart = list(plotBackgroundColor = '#656565')))# |>
   #hc_mapNavigation(enabled = TRUE)
-vt_map
+vt_map_hm
 saveRDS(vt_map, "vt_map.rds")

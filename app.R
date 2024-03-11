@@ -27,10 +27,14 @@ ui = fluidPage(
   # Main Panel features start 
   mainPanel(
     width = 12,
+    fluidRow(highchartOutput(outputId = "cloud")),
     fluidRow(
-      column(4, highchartOutput(outputId = "cloud")),
       column(4, highchartOutput(outputId = "vt_map")),
-      column(4, highchartOutput(outputId = "acs_age_plot"))
+      column(4, 
+        highchartOutput(outputId = "acs_ethnicity_plot"),
+        highchartOutput(outputId = "income_boxplot", height = 300)),
+      column(4, highchartOutput(outputId = "acs_age_plot")
+        )
       )
     )
   )
@@ -87,7 +91,7 @@ server <- function(input, output, session) {
   acs_age_plot <- reactive({
     selected_zips() |>
       inner_join(
-        acs_demographic_data,
+        vt_sample,
         by = c("zipcode" = "zip_code")
         ) |>
       group_by(age_bracket, age_factor, analysis_selection) |>
@@ -109,6 +113,33 @@ server <- function(input, output, session) {
     })
   
   output$acs_age_plot <- renderHighchart({acs_age_plot()})
+  
+  acs_ethnicity_plot <- reactive({
+    selected_zips() |>
+      inner_join(
+        vt_sample,
+        by = c("zipcode" = "zip_code")
+      ) |>
+    group_by(concept, analysis_selection) |>
+      summarise(value = sum(estimate, na.rm = TRUE)) |>
+      #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
+      ungroup() |>
+      group_by(analysis_selection) |>
+      mutate(
+        total = sum(value),
+        percent = value/total) |>
+      ungroup() |>
+      arrange(desc(percent)) |>
+      hchart(type = "bar", hcaes(x = concept, y = percent, group = analysis_selection)) |>
+      hc_plotOptions(column = list(stacking = "normal")) |>
+      hc_legend(enabled = TRUE) |>
+      hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
+      hc_add_theme(hc_theme_gsd())
+  })
+  
+  output$acs_ethnicity_plot <- renderHighchart({acs_ethnicity_plot()})
+  
+  output$income_boxplot <- renderHighchart(income_boxplot)
 
 }
 
