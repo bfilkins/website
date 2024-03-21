@@ -139,7 +139,53 @@ server <- function(input, output, session) {
   
   output$acs_ethnicity_plot <- renderHighchart({acs_ethnicity_plot()})
   
-  output$income_boxplot <- renderHighchart(income_boxplot)
+  acs_income_plot <- reactive({
+    
+    income_data <<- selected_zips() |>
+      select(zipcode, analysis_selection) |>
+      inner_join(
+        vt_sample,
+        by = c("zipcode" = "zip_code")
+      ) |>
+      group_by(major_city, analysis_selection, state) |>
+      summarise(median_household_income = as.numeric(first(median_household_income, na_rm = TRUE))) |>
+      ungroup() |>
+      filter(!is.na(median_household_income))
+    
+    income_boxplot <- highchart() |>
+      hc_xAxis(type = "category") |>
+      hc_chart(inverted = TRUE) |>
+      hc_colors(c(green_state_date_theme$`off white`)) |>
+      hc_add_series_list(data_to_boxplot(income_data, median_household_income, state)) |>
+      hc_title(text = "Median Income by Zipcode") |>
+      hc_yAxis(title = list(text = "median income")) |>
+      hc_add_series(
+        data = income_data |>
+          filter(analysis_selection == "remaining aggregate"),
+        type = "scatter",
+        hcaes(x = state, y = median_household_income, color = green_state_date_theme$medium_grey)
+      ) |>
+      hc_add_series(
+        data = income_data |>
+          filter(analysis_selection != "remaining aggregate"),
+        type = "scatter",
+        hcaes(x = state, y = median_household_income, size = 4, color = green_state_date_theme$`Bright green`)
+      ) |>
+      #hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) |>
+      hc_plotOptions(scatter = list(
+        marker = list(
+          radius = 5,
+          symbol = "circle",
+          lineWidth = 0.5
+        )
+      ))  |>
+      hc_plotOptions(scatter = list(jitter = list(x = .2, y = 0))) |>
+      hc_legend(enabled = FALSE)
+    
+    return(income_boxplot)
+  })
+  
+  output$income_boxplot <- renderHighchart(acs_income_plot())
 
 }
 
