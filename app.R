@@ -27,7 +27,7 @@ ui = fluidPage(
   # Main Panel features start 
   mainPanel(
     width = 12,
-    #fluidRow(highchartOutput(outputId = "cloud")),
+    fluidRow(h1("Zip Code Demographics"), height = 50),
     fluidRow(
       column(4, highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
@@ -226,7 +226,5 @@ server <- function(input, output, session) {
 }
 
 # Create Shiny app ----
-#options(shiny.launch.browser = .rs.invokeShinyWindowExternal)
-
 shinyApp(ui = ui, server = server)
 

@@ -5,6 +5,6 @@ account: greenstatedata
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11409008
-bundleId: 8336280
+bundleId: 8425881
 url: https://greenstatedata.shinyapps.io/website/
 version: 1

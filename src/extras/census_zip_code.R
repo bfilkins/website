@@ -5,25 +5,23 @@ library(tidycensus)
 library(tidyverse)
 library(highcharter)
 # 
-# census_api_key(Sys.getenv("census_key"))
+census_api_key(Sys.getenv("census_key"))
 # 
-# year <- 2021
-# 
-# # ACS zipcode  ####
-# acs_vars <-load_variables(
-#   dataset = "acs5",
-#   year = year, cache = FALSE) |>
-#   mutate(id = name)
-# 
-# # tract by Age and Sex
-# acs_vars_1 <- acs_vars |>
-#   head(279) |>
-#   pull(id)
-# 
-# # this works for all states
-# acs_pop_data <- get_acs(geography = "zcta", variables = acs_vars_1 , year = year)
-# 
-# saveRDS(acs_pop_data, "2021_zip_code_pop")
+year <- 2021
+
+# ACS zipcode  ####
+acs_vars <-load_variables(
+  dataset = "acs5",
+  year = year, cache = FALSE) |>
+  mutate(id = name)
+
+# tract by Age and Sex
+acs_vars_1 <- acs_vars |>
+  head(279) |>
+  pull(id)
+
+# this works for all states # this takes ~ 4 mins
+acs_pop_data <- get_acs(geography = "zcta", variables = acs_vars_1 , year = year)
 
 acs_demographic_data <- acs_pop_data |>
   inner_join(
@@ -73,21 +71,21 @@ concept != "(WHITE ALONE)") |>
     ),
     zip_code = str_remove(NAME, "ZCTA5 ")
   )
-# 
-# 
-# selected_zips <- zip_code_db |> 
-#   filter(state == "VT") |>
-#   mutate(lon = lng) |>
-#   #sample_n(70) |>
-#   mutate(home = if_else(zipcode == "05477", "home", "other"))
-# 
-# set.seed(121)
+
+set.seed(121)
+
+selected_zips <- zip_code_db |>
+  filter(state == "VT") |>
+  mutate(lon = lng) |>
+  sample_n(70) |>
+  mutate(home = if_else(zipcode == "05477", "home", "other"))
 
 vt_sample <- acs_demographic_data |>
   inner_join(selected_zips, by = c("zip_code" = "zipcode"))
 
-# saveRDS(vt_sample, "vt_sample.rds")
-#saveRDS(acs_demographic_data, "acs_demographic_data.rds")
+
+
+saveRDS(vt_sample, "vt_sample.rds")
 
 # explore to match total population
 vt_overall <- acs_demographic_data |>
