@@ -205,3 +205,31 @@ acs_income_data <- acs_income_1 |>
   filter(!str_detect(label,"Householder")) |>
   mutate(zip_code = str_remove(NAME, "ZCTA5 ")) |>
   select(zip_code, median_income = estimate)
+
+
+sex_composition <- dynamic_data |>
+  inner_join(
+    vt_sample,
+    by = c("zipcode" = "zip_code")
+  ) |>
+  group_by(analysis_selection, sex) |>
+  summarise(value = sum(estimate, na.rm = TRUE)) |>
+  #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
+  ungroup() |>
+  group_by(analysis_selection) |>
+  mutate(
+    total = sum(value),
+    percent = (value/total)*100) |>
+  ungroup() |>
+  mutate(sort = if_else(analysis_selection == "remaining aggregate",2,1)) |>
+  arrange(sort) |>
+  hchart(type = "column", hcaes(x = analysis_selection, y = percent, group = sex)) |>
+  hc_chart(inverted=T) %>%
+  hc_plotOptions(column = list(stacking = "percent")) |>
+  hc_yAxis(
+    labels = list(format = "{value}%"),
+    max = 100) |>
+  hc_legend(enabled = TRUE) |>
+  hc_colors(c("#F57E73", cool_winter_theme$mid_gray)) |>
+  hc_add_theme(hc_theme_gsd())
+sex_composition

@@ -27,13 +27,15 @@ ui = fluidPage(
   # Main Panel features start 
   mainPanel(
     width = 12,
-    fluidRow(highchartOutput(outputId = "cloud")),
+    #fluidRow(highchartOutput(outputId = "cloud")),
     fluidRow(
-      column(4, highchartOutput(outputId = "vt_map")),
+      column(4, highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
-        highchartOutput(outputId = "acs_ethnicity_plot"),
+        highchartOutput(outputId = "acs_ethnicity_plot", height = 300),
         highchartOutput(outputId = "income_boxplot", height = 300)),
-      column(4, highchartOutput(outputId = "acs_age_plot")
+      column(4, 
+        highchartOutput(outputId = "acs_age_plot", height = 300),
+        highchartOutput(outputId = "sex_composition", height = 300)
         )
       )
     )
@@ -43,7 +45,7 @@ ui = fluidPage(
 # Define Server ####
 server <- function(input, output, session) {
   
-  output$cloud <- renderHighchart(cloud)
+  #output$cloud <- renderHighchart(cloud)
   
   legendMouseOverFunction <- JS("function(event) {Shiny.onInputChange('legendmouseOver', this.name);}")
   
@@ -81,10 +83,11 @@ server <- function(input, output, session) {
   })
   
   selected_zips <- reactive({
-    zip_code_base |>
+    dynamic_data <<- zip_code_base |>
       mutate(
         dynamic_selection = selected_zip(),
         analysis_selection = if_else(zipcode == dynamic_selection, paste(dynamic_selection,major_city), "remaining aggregate"))
+    return(dynamic_data)
     })
   
   
@@ -101,13 +104,14 @@ server <- function(input, output, session) {
       group_by(analysis_selection) |>
       mutate(
         total = sum(value),
-        percent = value/total) |>
+        percent = (value/total)*100) |>
       ungroup() |>
       arrange(age_factor) |>
       hchart(
         type = "spline", 
         hcaes(x = age_bracket, y = percent, group = analysis_selection)) |>
       hc_legend(enabled = TRUE) |>
+      hc_yAxis(labels = list(format = "{value}%")) |>
       hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
       hc_add_theme(hc_theme_gsd())
     })
@@ -127,11 +131,12 @@ server <- function(input, output, session) {
       group_by(analysis_selection) |>
       mutate(
         total = sum(value),
-        percent = value/total) |>
+        percent = (value/total)*100) |>
       ungroup() |>
       arrange(desc(percent)) |>
       hchart(type = "bar", hcaes(x = concept, y = percent, group = analysis_selection)) |>
       hc_plotOptions(column = list(stacking = "normal")) |>
+      hc_yAxis(labels = list(format = "{value}%")) |>
       hc_legend(enabled = TRUE) |>
       hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
       hc_add_theme(hc_theme_gsd())
@@ -158,7 +163,8 @@ server <- function(input, output, session) {
       hc_colors(c(green_state_date_theme$`off white`)) |>
       hc_add_series_list(data_to_boxplot(income_data, median_household_income, state)) |>
       hc_title(text = "Median Income by Zipcode") |>
-      hc_yAxis(title = list(text = "median income")) |>
+      hc_yAxis(
+        title = list(text = "median income")) |>
       hc_add_series(
         data = income_data |>
           filter(analysis_selection == "remaining aggregate"),
@@ -186,6 +192,36 @@ server <- function(input, output, session) {
   })
   
   output$income_boxplot <- renderHighchart(acs_income_plot())
+  
+  sex_composition <- reactive({
+    selected_zips() |>
+      inner_join(
+        vt_sample,
+        by = c("zipcode" = "zip_code")
+      ) |>
+      group_by(analysis_selection, sex) |>
+      summarise(value = sum(estimate, na.rm = TRUE)) |>
+      #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
+      ungroup() |>
+      group_by(analysis_selection) |>
+      mutate(
+        total = sum(value),
+        percent = (value/total)*100) |>
+      ungroup() |>
+      mutate(sort = if_else(analysis_selection == "remaining aggregate",2,1)) |>
+      arrange(sort) |>
+      hchart(type = "column", hcaes(x = analysis_selection, y = percent, group = sex)) |>
+      hc_chart(inverted = TRUE) %>%
+      hc_plotOptions(column = list(stacking = "percent")) |>
+      hc_yAxis(
+        labels = list(format = "{value}%"),
+        max = 100) |>
+      hc_legend(enabled = TRUE) |>
+      hc_colors(c("#F57E73", cool_winter_theme$mid_gray)) |>
+      hc_add_theme(hc_theme_gsd())
+  })
+  
+  output$sex_composition <- renderHighchart(sex_composition())
 
 }
 

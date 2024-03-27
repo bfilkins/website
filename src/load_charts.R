@@ -1,6 +1,6 @@
 # Load charts
 
-cloud <- readRDS("cloud.rds")
+#cloud <- readRDS("cloud.rds")
 vt_sample <- readRDS("vt_sample.rds")
 
 # Start the VT sample one with highcharts (save the image when done)
