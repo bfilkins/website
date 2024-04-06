@@ -7,7 +7,7 @@ font_selected <- "Quicksand"
 #Light Colors
 bg_color <- "#656565"
 fg_color <- "white"
-detail_color <- "#444444"
+detail_color <- "white"
 
 green_state_date_theme <- list(
   "Bright green" = "#03C04A",

@@ -75,17 +75,17 @@ concept != "(WHITE ALONE)") |>
 set.seed(121)
 
 selected_zips <- zip_code_db |>
-  filter(state == "VT") |>
+  filter(state == "MA") |>
   mutate(lon = lng) |>
   sample_n(70) |>
-  mutate(home = if_else(zipcode == "05477", "home", "other"))
+  mutate(home = if_else(zipcode == "02143", "home", "other"))
 
-vt_sample <- acs_demographic_data |>
+state_sample <- acs_demographic_data |>
   inner_join(selected_zips, by = c("zip_code" = "zipcode"))
 
 
 
-saveRDS(vt_sample, "vt_sample.rds")
+saveRDS(state_sample, "state_sample.rds")
 
 # explore to match total population
 vt_overall <- acs_demographic_data |>
@@ -99,7 +99,7 @@ vt_overall <- acs_demographic_data |>
   mutate(percent = pop / sum(pop))
 
 
-acs_age_plot_data <- vt_sample |>
+acs_age_plot_data <- state_sample |>
   group_by(age_bracket, age_factor, home) |>
   summarise(value = sum(estimate, na.rm = TRUE)) |>
   #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
@@ -117,7 +117,7 @@ acs_age_plot <- acs_age_plot_data |>
   hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) 
 acs_age_plot
 
-acs_race_plot_data <- vt_sample |>
+acs_race_plot_data <- state_sample |>
   group_by(concept, home) |>
   summarise(value = sum(estimate, na.rm = TRUE)) |>
   #mutate(age_bracket = fct_reorder(as.factor(age_bracket), desc)) |>
@@ -136,7 +136,7 @@ acs_race_plot <- acs_race_plot_data |>
   hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) 
 acs_race_plot
 
-acs_income_plot_data <- vt_sample |>
+acs_income_plot_data <- state_sample |>
   group_by(NAME, home, state) |>
   summarise(median_household_income = as.numeric(first(median_household_income, na_rm = TRUE))) |>
   ungroup() |>
@@ -207,7 +207,7 @@ acs_income_data <- acs_income_1 |>
 
 sex_composition <- dynamic_data |>
   inner_join(
-    vt_sample,
+    state_sample,
     by = c("zipcode" = "zip_code")
   ) |>
   group_by(analysis_selection, sex) |>

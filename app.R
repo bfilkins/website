@@ -29,12 +29,14 @@ ui = fluidPage(
     width = 12,
     fluidRow(h1("Zip Code Demographics"), height = 50),
     fluidRow(
-      column(4, highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
-        highchartOutput(outputId = "acs_ethnicity_plot", height = 300),
-        highchartOutput(outputId = "income_boxplot", height = 300)),
+        h3("Population"),
+        highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
         highchartOutput(outputId = "acs_age_plot", height = 300),
+        highchartOutput(outputId = "income_boxplot", height = 300)),
+      column(4, 
+        highchartOutput(outputId = "acs_ethnicity_plot", height = 300),
         highchartOutput(outputId = "sex_composition", height = 300)
         )
       )
@@ -45,8 +47,6 @@ ui = fluidPage(
 # Define Server ####
 server <- function(input, output, session) {
   
-  #output$cloud <- renderHighchart(cloud)
-  
   legendMouseOverFunction <- JS("function(event) {Shiny.onInputChange('legendmouseOver', this.name);}")
   
   values <- reactiveValues(default = "05477")
@@ -56,18 +56,17 @@ server <- function(input, output, session) {
   })
   
   bubble_map <- reactive({
-    hcmap("countries/us/us-vt-all",
+    hcmap("countries/us/us-ma-all",
           nullColor = "#656565") |>
       hc_legend (enabled = FALSE)|>
       hc_add_series(
         data = zip_code_base,
         hcaes(group = zipcode),
-        color = green_state_date_theme$`Bright green`,
+        color = beercolors$light_blue,
         type = "mapbubble",
         minSize = "1%",
         maxSize = "8%",
         tooltip = list(pointFormat = "{point.major_city} <br> zip: {point.zipcode} <br> population: {point.z}")) |>
-      #hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) |>
       hc_chart(borderColor = "#656565", borderWidth = 15) |>
       hc_plotOptions(
         series = list(events = list(mouseOver = legendMouseOverFunction)),
@@ -111,8 +110,9 @@ server <- function(input, output, session) {
         type = "spline", 
         hcaes(x = age_bracket, y = percent, group = analysis_selection)) |>
       hc_legend(enabled = TRUE) |>
+      hc_title(text = "Age") |>
       hc_yAxis(labels = list(format = "{value}%")) |>
-      hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
+      hc_colors(c(beercolors$light_blue, cool_winter_theme$off_white)) |>
       hc_add_theme(hc_theme_gsd())
     })
   
@@ -138,7 +138,8 @@ server <- function(input, output, session) {
       hc_plotOptions(column = list(stacking = "normal")) |>
       hc_yAxis(labels = list(format = "{value}%")) |>
       hc_legend(enabled = TRUE) |>
-      hc_colors(c(green_state_date_theme$`Bright green`, cool_winter_theme$off_white)) |>
+      hc_title(text = "Group Composition") |>
+      hc_colors(c(beercolors$light_blue, cool_winter_theme$off_white)) |>
       hc_add_theme(hc_theme_gsd())
   })
   
@@ -162,7 +163,6 @@ server <- function(input, output, session) {
       hc_chart(inverted = TRUE) |>
       hc_colors(c(green_state_date_theme$`off white`)) |>
       hc_add_series_list(data_to_boxplot(income_data, median_household_income, state)) |>
-      hc_title(text = "Median Income by Zipcode") |>
       hc_yAxis(
         title = list(text = "median income")) |>
       hc_add_series(
@@ -175,9 +175,9 @@ server <- function(input, output, session) {
         data = income_data |>
           filter(analysis_selection != "remaining aggregate"),
         type = "scatter",
-        hcaes(x = state, y = median_household_income, size = 4, color = green_state_date_theme$`Bright green`)
+        hcaes(x = state, y = median_household_income, size = 4, color = beercolors$light_blue)
       ) |>
-      #hc_colors(c(green_state_date_theme$`Bright green`, green_state_date_theme$dark_grey)) |>
+      #hc_colors(c(beercolors$light_blue, green_state_date_theme$dark_grey)) |>
       hc_plotOptions(scatter = list(
         marker = list(
           radius = 5,
@@ -186,6 +186,8 @@ server <- function(input, output, session) {
         )
       ))  |>
       hc_plotOptions(scatter = list(jitter = list(x = .2, y = 0))) |>
+      hc_title(text = "Population") |>
+      hc_add_theme(hc_theme_gsd()) |>
       hc_legend(enabled = FALSE)
     
     return(income_boxplot)
@@ -213,11 +215,12 @@ server <- function(input, output, session) {
       hchart(type = "column", hcaes(x = analysis_selection, y = percent, group = sex)) |>
       hc_chart(inverted = TRUE) %>%
       hc_plotOptions(column = list(stacking = "percent")) |>
+      hc_title(text = "Sex Composition") |>
       hc_yAxis(
         labels = list(format = "{value}%"),
         max = 100) |>
       hc_legend(enabled = TRUE) |>
-      hc_colors(c("#F57E73", cool_winter_theme$mid_gray)) |>
+      hc_colors(c(cool_winter_theme$off_white, cool_winter_theme$mid_gray)) |>
       hc_add_theme(hc_theme_gsd())
   })
   
