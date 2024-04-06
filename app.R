@@ -162,7 +162,7 @@ server <- function(input, output, session) {
     income_boxplot <- highchart() |>
       hc_xAxis(type = "category") |>
       hc_chart(inverted = TRUE) |>
-      hc_colors(c(green_state_date_theme$`off white`)) |>
+      hc_colors(c(green_state_data_theme$`off white`)) |>
       hc_add_series_list(data_to_boxplot(income_data, median_household_income, state)) |>
       hc_yAxis(
         title = list(text = "median income")) |>
@@ -170,7 +170,7 @@ server <- function(input, output, session) {
         data = income_data |>
           filter(analysis_selection == "remaining aggregate"),
         type = "scatter",
-        hcaes(x = state, y = median_household_income, color = green_state_date_theme$medium_grey)
+        hcaes(x = state, y = median_household_income, color = green_state_data_theme$medium_grey)
       ) |>
       hc_add_series(
         data = income_data |>
@@ -178,7 +178,7 @@ server <- function(input, output, session) {
         type = "scatter",
         hcaes(x = state, y = median_household_income, size = 4, color = beercolors$light_blue)
       ) |>
-      #hc_colors(c(beercolors$light_blue, green_state_date_theme$dark_grey)) |>
+      #hc_colors(c(beercolors$light_blue, green_state_data_theme$dark_grey)) |>
       hc_plotOptions(scatter = list(
         marker = list(
           radius = 5,
