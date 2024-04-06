@@ -30,7 +30,8 @@ ui = fluidPage(
     fluidRow(h1("Zip Code Demographics"), height = 50),
     fluidRow(
       column(4, 
-        h3("Population"),
+        h4("Population"),
+        h5("(hover on bubble)"),
         highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
         highchartOutput(outputId = "acs_age_plot", height = 300),
@@ -49,7 +50,7 @@ server <- function(input, output, session) {
   
   legendMouseOverFunction <- JS("function(event) {Shiny.onInputChange('legendmouseOver', this.name);}")
   
-  values <- reactiveValues(default = "05477")
+  values <- reactiveValues(default = "02143")
   
   observeEvent(input$legendmouseOver,{
     values$default <- input$legendmouseOver
@@ -93,7 +94,7 @@ server <- function(input, output, session) {
   acs_age_plot <- reactive({
     selected_zips() |>
       inner_join(
-        vt_sample,
+        state_sample,
         by = c("zipcode" = "zip_code")
         ) |>
       group_by(age_bracket, age_factor, analysis_selection) |>
@@ -121,7 +122,7 @@ server <- function(input, output, session) {
   acs_ethnicity_plot <- reactive({
     selected_zips() |>
       inner_join(
-        vt_sample,
+        state_sample,
         by = c("zipcode" = "zip_code")
       ) |>
     group_by(concept, analysis_selection) |>
@@ -138,7 +139,7 @@ server <- function(input, output, session) {
       hc_plotOptions(column = list(stacking = "normal")) |>
       hc_yAxis(labels = list(format = "{value}%")) |>
       hc_legend(enabled = TRUE) |>
-      hc_title(text = "Group Composition") |>
+      hc_title(text = "Group") |>
       hc_colors(c(beercolors$light_blue, cool_winter_theme$off_white)) |>
       hc_add_theme(hc_theme_gsd())
   })
@@ -150,7 +151,7 @@ server <- function(input, output, session) {
     income_data <<- selected_zips() |>
       select(zipcode, analysis_selection) |>
       inner_join(
-        vt_sample,
+        state_sample,
         by = c("zipcode" = "zip_code")
       ) |>
       group_by(major_city, analysis_selection, state) |>
@@ -186,7 +187,7 @@ server <- function(input, output, session) {
         )
       ))  |>
       hc_plotOptions(scatter = list(jitter = list(x = .2, y = 0))) |>
-      hc_title(text = "Population") |>
+      hc_title(text = "Income") |>
       hc_add_theme(hc_theme_gsd()) |>
       hc_legend(enabled = FALSE)
     
@@ -198,7 +199,7 @@ server <- function(input, output, session) {
   sex_composition <- reactive({
     selected_zips() |>
       inner_join(
-        vt_sample,
+        state_sample,
         by = c("zipcode" = "zip_code")
       ) |>
       group_by(analysis_selection, sex) |>
@@ -215,7 +216,7 @@ server <- function(input, output, session) {
       hchart(type = "column", hcaes(x = analysis_selection, y = percent, group = sex)) |>
       hc_chart(inverted = TRUE) %>%
       hc_plotOptions(column = list(stacking = "percent")) |>
-      hc_title(text = "Sex Composition") |>
+      hc_title(text = "Sex") |>
       hc_yAxis(
         labels = list(format = "{value}%"),
         max = 100) |>

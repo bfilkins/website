@@ -1,15 +1,8 @@
 
 font_selected <- "Quicksand"
 
-# library(showtext)
-# this_font <- font_add_google(name = font_selected)
-
-#Light Colors
-bg_color <- "#656565"
-fg_color <- "white"
-detail_color <- "white"
-
-green_state_date_theme <- list(
+green_state_data_theme <- list(
+  "background_grey"= "#656565",
   "Bright green" = "#03C04A",
   "off white" = "#E8E8E8",
   "Deep blue" = "#002699",
@@ -56,6 +49,10 @@ beercolors <- list(
   "switchback_turquise" = "#2C667A"
 )
 
+#Light Colors
+bg_color <- green_state_data_theme$background_grey
+fg_color <- "white"
+detail_color <- green_state_data_theme$dark_grey
 
 element_rect_round <- function(
     fill = NULL,
@@ -206,3 +203,4 @@ hc_theme_gsd <- function (...)
   }
   theme
 }
+

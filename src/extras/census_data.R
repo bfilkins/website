@@ -23,7 +23,7 @@ acs_vars_1 <- acs_vars |>
 acs_demographic_1 <- get_acs(
   variables = acs_vars_1,
   geography = "county subdivision",
-  state = "VT",
+  state = "MA",
   year = 2022,
   output = "tidy",
   geometry = TRUE
