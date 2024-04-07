@@ -27,18 +27,17 @@ ui = fluidPage(
   # Main Panel features start 
   mainPanel(
     width = 12,
-    fluidRow(h1("Zip Code Demographics"), height = 50),
+    #fluidRow(h1("Zip Code Demographics"), height = 50),
     fluidRow(
       column(4, 
-        h4("Population"),
-        h5("(hover on bubble)"),
+        h5("Population: (hover on bubble)"),
         highchartOutput(outputId = "vt_map"), height = 600),
       column(4, 
         highchartOutput(outputId = "acs_age_plot", height = 300),
-        highchartOutput(outputId = "income_boxplot", height = 300)),
+        highchartOutput(outputId = "income_boxplot", height = 200)),
       column(4, 
         highchartOutput(outputId = "acs_ethnicity_plot", height = 300),
-        highchartOutput(outputId = "sex_composition", height = 300)
+        highchartOutput(outputId = "sex_composition", height = 200)
         )
       )
     )
@@ -104,12 +103,14 @@ server <- function(input, output, session) {
       group_by(analysis_selection) |>
       mutate(
         total = sum(value),
-        percent = (value/total)*100) |>
+        percent = (value/total)*100,
+        percent_label = scales::percent(percent, accuracy = 1, scale = 1)) |>
       ungroup() |>
       arrange(age_factor) |>
       hchart(
         type = "spline", 
-        hcaes(x = age_bracket, y = percent, group = analysis_selection)) |>
+        hcaes(x = age_bracket, y = percent, group = analysis_selection),
+        tooltip = list(pointFormat = "{point.percent_label} of the population for {point.analysis_selection} <br> are {point.age_bracket}")) |>
       hc_legend(enabled = TRUE) |>
       hc_title(text = "Age") |>
       hc_yAxis(labels = list(format = "{value}%")) |>
@@ -132,10 +133,13 @@ server <- function(input, output, session) {
       group_by(analysis_selection) |>
       mutate(
         total = sum(value),
-        percent = (value/total)*100) |>
+        percent = (value/total)*100,
+        percent_label = scales::percent(percent, accuracy = 1, scale = 1)) |>
       ungroup() |>
       arrange(desc(percent)) |>
-      hchart(type = "bar", hcaes(x = concept, y = percent, group = analysis_selection)) |>
+      hchart(
+        type = "bar", hcaes(x = concept, y = percent, group = analysis_selection),
+        tooltip = list(pointFormat = "{point.percent_label} of the population for {point.analysis_selection} <br> are {point.concept}")) |>
       hc_plotOptions(column = list(stacking = "normal")) |>
       hc_yAxis(labels = list(format = "{value}%")) |>
       hc_legend(enabled = TRUE) |>
@@ -157,26 +161,31 @@ server <- function(input, output, session) {
       group_by(major_city, analysis_selection, state) |>
       summarise(median_household_income = as.numeric(first(median_household_income, na_rm = TRUE))) |>
       ungroup() |>
-      filter(!is.na(median_household_income))
+      filter(!is.na(median_household_income)) |>
+      mutate(income_label = scales::dollar(median_household_income))
     
     income_boxplot <- highchart() |>
       hc_xAxis(type = "category") |>
       hc_chart(inverted = TRUE) |>
       hc_colors(c(green_state_data_theme$`off white`)) |>
       hc_add_series_list(data_to_boxplot(income_data, median_household_income, state)) |>
-      hc_yAxis(
-        title = list(text = "median income")) |>
+      hc_yAxis(title = list(text = "median income")) |>
+      hc_xAxis(title = list(text = "")) |>
       hc_add_series(
+        name = "remaining city",
         data = income_data |>
           filter(analysis_selection == "remaining aggregate"),
         type = "scatter",
-        hcaes(x = state, y = median_household_income, color = green_state_data_theme$medium_grey)
+        hcaes(x = state, y = median_household_income, color = green_state_data_theme$medium_grey),
+        tooltip = list(pointFormat = "{point.income_label} is the median income for {point.major_city}")
       ) |>
       hc_add_series(
+        name = "selected city",
         data = income_data |>
           filter(analysis_selection != "remaining aggregate"),
         type = "scatter",
-        hcaes(x = state, y = median_household_income, size = 4, color = beercolors$light_blue)
+        hcaes(x = state, y = median_household_income, size = 4, color = beercolors$light_blue),
+        tooltip = list(pointFormat = "{point.income_label} is the median income for {point.major_city}")
       ) |>
       #hc_colors(c(beercolors$light_blue, green_state_data_theme$dark_grey)) |>
       hc_plotOptions(scatter = list(
@@ -209,17 +218,21 @@ server <- function(input, output, session) {
       group_by(analysis_selection) |>
       mutate(
         total = sum(value),
-        percent = (value/total)*100) |>
+        percent = (value/total)*100,
+        percent_label = scales::percent(percent, accuracy = 1, scale = 1)) |>
       ungroup() |>
       mutate(sort = if_else(analysis_selection == "remaining aggregate",2,1)) |>
       arrange(sort) |>
-      hchart(type = "column", hcaes(x = analysis_selection, y = percent, group = sex)) |>
+      hchart(
+        type = "column", hcaes(x = analysis_selection, y = percent, group = sex),
+        tooltip = list(pointFormat = "{point.percent_label} of the population for {point.analysis_selection} <br> are {point.sex}")) |>
       hc_chart(inverted = TRUE) %>%
       hc_plotOptions(column = list(stacking = "percent")) |>
       hc_title(text = "Sex") |>
       hc_yAxis(
         labels = list(format = "{value}%"),
         max = 100) |>
+      hc_xAxis(title = list(text = "")) |>
       hc_legend(enabled = TRUE) |>
       hc_colors(c(cool_winter_theme$off_white, cool_winter_theme$mid_gray)) |>
       hc_add_theme(hc_theme_gsd())
